@@ -8,7 +8,7 @@ DIR_TMP='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
 IMAGES_PATH='/root/tools/pngquant3/images'
 OUTPUT_PATH='/root/tools/pngquant3/images/output'
-CENTOS_SEVEN_CHECK=$(awk -F "=" '/^VERSION_ID=/ {print $2}' /etc/os-release | sed -e 's|"||g')
+CENTOS_SEVEN_CHECK=$(awk -F "=" '/^VERSION_ID=/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
 
 prep() {
   # sample images
@@ -49,7 +49,7 @@ prep() {
   else
       echo "YUM packages are already installed"
   fi
-  if [[ "$CENTOS_SEVEN_CHECK" -eq 7 ]]; then
+  if [ "$CENTOS_SEVEN_CHECK" -eq 7 ]; then
     if [ ! -f /usr/bin/llvm-profdata-14 ]; then
       yum -y install llvm14 llvm14-devel
     fi
@@ -134,12 +134,14 @@ pngquant_install() {
   done
 
   # Step 3: Merge the `.profraw` files into a `.profdata` file
-  if [[ "$CENTOS_SEVEN_CHECK" -eq 7 ]]; then
+  if [ "$CENTOS_SEVEN_CHECK" -eq 7 ]; then
     if [ -f /usr/bin/llvm-profdata-14 ]; then
       LLVM_PRODATA_BIN='/usr/bin/llvm-profdata-14'
     else
       LLVM_PRODATA_BIN='/usr/bin/llvm-profdata'
     fi
+  else
+    LLVM_PRODATA_BIN='/usr/bin/llvm-profdata'
   fi
   echo
   echo "$LLVM_PRODATA_BIN merge -o /home/rusttmp/pgo/merged.profdata /home/rusttmp/pgo"
