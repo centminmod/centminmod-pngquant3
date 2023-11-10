@@ -3,6 +3,7 @@
 # install pngquant3 at /opt/pngquant/bin/pngquant for 
 # Centmin Mod LEMP stacks using EL7, EL8, EL9 OSes
 ###############################################################
+STATIC_BUILD='y'
 DT=$(date +"%d%m%y-%H%M%S")
 DIR_TMP='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
@@ -69,9 +70,15 @@ pngquant_install() {
   rm -rf pngquant
   git clone --recursive https://github.com/kornelski/pngquant.git
   cd pngquant
-  cargo build --release
   mkdir -p /opt/pngquant/bin
-  cp -af ./target/release/pngquant /opt/pngquant/bin/pngquant
+  if [[ "$STATIC_BUILD" = [yY] ]]; then
+    rustup target add x86_64-unknown-linux-musl
+    cargo build --release --features=lcms2-static,png-static,z-static --target=x86_64-unknown-linux-musl
+    \cp -af ./target/x86_64-unknown-linux-musl/release/pngquant /opt/pngquant/bin/pngquant    
+  else
+    cargo build --release
+    \cp -af ./target/release/pngquant /opt/pngquant/bin/pngquant
+  fi
   strip /opt/pngquant/bin/pngquant
   echo 'export PATH=/opt/pngquant/bin:$PATH' | sudo tee /etc/profile.d/pngquant.sh
   source /etc/profile.d/pngquant.sh

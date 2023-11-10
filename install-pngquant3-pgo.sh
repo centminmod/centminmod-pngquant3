@@ -4,6 +4,7 @@
 # Centmin Mod LEMP stacks using EL7, EL8, EL9 OSes
 ###############################################################
 DT=$(date +"%d%m%y-%H%M%S")
+STATIC_BUILD='y'
 DIR_TMP='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
 IMAGES_PATH='/root/tools/pngquant3/images'
@@ -159,9 +160,15 @@ pngquant_install() {
   echo
   cargo clean
   # https://github.com/llvm/llvm-project/issues/57501#issuecomment-1694552006
-  sed -i 's|lto = true|lto = false|' Cargo.toml            
-  RUSTFLAGS="-Cprofile-use=/home/rusttmp/pgo/merged.profdata" cargo build --release
-  \cp -af ./target/release/pngquant /opt/pngquant/bin/pngquant
+  sed -i 's|lto = true|lto = false|' Cargo.toml
+  if [[ "$STATIC_BUILD" = [yY] ]]; then
+    rustup target add x86_64-unknown-linux-musl
+    RUSTFLAGS="-Cprofile-use=/home/rusttmp/pgo/merged.profdata" cargo build --release --features=lcms2-static,png-static,z-static --target=x86_64-unknown-linux-musl
+    \cp -af ./target/x86_64-unknown-linux-musl/release/pngquant /opt/pngquant/bin/pngquant    
+  else
+    RUSTFLAGS="-Cprofile-use=/home/rusttmp/pgo/merged.profdata" cargo build --release
+    \cp -af ./target/release/pngquant /opt/pngquant/bin/pngquant
+  fi
 
   # Benchmark with PGO
   echo
