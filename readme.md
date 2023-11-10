@@ -88,3 +88,40 @@ will be processed and the quantized image will go to stdout.
 The default behavior if the output file exists is to skip the conversion;
 use --force to overwrite. See man page for full list of options.
 ```
+
+# RPM Packages
+
+Custom built RPM packages are built using static pngquant v3 binaries.
+
+```
+-rw-r--r-- 1 root root 524K Nov 10 10:33 pngquant3-3.0.3-1.el7.x86_64.rpm
+-rw-r--r-- 1 root root 524K Nov 10 10:33 pngquant3-3.0.3-1.el8.x86_64.rpm
+-rw-r--r-- 1 root root 524K Nov 10 10:33 pngquant3-3.0.3-1.el9.x86_64.rpm
+```
+```
+yum -q info pngquant3
+Installed Packages
+Name         : pngquant3
+Version      : 3.0.3
+Release      : 1.el9
+Architecture : x86_64
+Size         : 1.3 M
+Source       : pngquant3-3.0.3-1.el9.src.rpm
+Repository   : @System
+From repo    : @commandline
+Summary      : pngquant 3 - High-quality PNG image compressor for el9
+URL          : https://pngquant.org
+License      : unknown
+Description  : pngquant 3 - High-quality PNG image compressor
+```
+```
+rpm -ql pngquant3
+
+/etc/profile.d/pngquant.sh
+/opt/pngquant/bin/pngquant
+```
+```
+cat /etc/profile.d/pngquant.sh
+
+export PATH=/opt/pngquant/bin:$PATH
+```
