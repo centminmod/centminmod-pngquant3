@@ -114,7 +114,7 @@ pngquant_install() {
   for image in 1mb.png 5mb.png ducati.png; do
     output_file="${OUTPUT_PATH}/${image%.png}-nogpo.png"
     echo "${IMAGES_PATH}/${image}"
-    { time /opt/pngquant/bin/pngquant -f "${IMAGES_PATH}/${image}" --output "$output_file"; } 2>&1 | tee -a "${CENTMINLOGDIR}/benchmark-no-pgo-${DT}.log"
+    { /usr/bin/time --format='real: %es user: %Us sys: %Ss cpu: %P maxmem: %M KB cswaits: %w' /opt/pngquant/bin/pngquant -f "${IMAGES_PATH}/${image}" --output "$output_file"; } 2>&1 | tee -a "${CENTMINLOGDIR}/benchmark-no-pgo-${DT}.log"
   done
 
   # Compile with PGO
@@ -128,9 +128,14 @@ pngquant_install() {
   RUSTFLAGS="-Cprofile-generate=/home/rusttmp/pgo" cargo build --release
 
   # Step 2: Generate profile data by running the instrumented binary
-  for image in 1mb.png 5mb.png ducati.png; do
-    output_file="${OUTPUT_PATH}/${image%.png}-nogpo.png"
-    time ./target/release/pngquant -f "${IMAGES_PATH}/${image}" --output "$output_file";
+  for run in {1..10}; do
+    echo
+    echo "PGO training run $run"
+    for image in 1mb.png 5mb.png ducati.png; do
+      output_file="${OUTPUT_PATH}/${image%.png}-nogpo${run}.png"
+      echo "Processing $image for run $run"
+      /usr/bin/time --format='real: %es user: %Us sys: %Ss cpu: %P maxmem: %M KB cswaits: %w' ./target/release/pngquant -f "${IMAGES_PATH}/${image}" --output "$output_file";
+    done
   done
 
   # Step 3: Merge the `.profraw` files into a `.profdata` file
@@ -164,7 +169,7 @@ pngquant_install() {
   for image in 1mb.png 5mb.png ducati.png; do
     output_file="${OUTPUT_PATH}/${image%.png}-pgo.png"
     echo "${IMAGES_PATH}/${image}"
-    { time /opt/pngquant/bin/pngquant -f "${IMAGES_PATH}/${image}" --output "$output_file"; } 2>&1 | tee -a "${CENTMINLOGDIR}/benchmark-pgo-${DT}.log"
+    { /usr/bin/time --format='real: %es user: %Us sys: %Ss cpu: %P maxmem: %M KB cswaits: %w' /opt/pngquant/bin/pngquant -f "${IMAGES_PATH}/${image}" --output "$output_file"; } 2>&1 | tee -a "${CENTMINLOGDIR}/benchmark-pgo-${DT}.log"
   done
 
   echo 'export PATH=/opt/pngquant/bin:$PATH' | sudo tee /etc/profile.d/pngquant.sh
