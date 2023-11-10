@@ -6,6 +6,32 @@ Usage:
 ./install-pngquant3.sh install
 ```
 
+# static built binary
+
+```
+./install-pngquant3.sh install
+Install pngqaunt 3
+
+export PATH=/opt/pngquant/bin:$PATH
+
+which pngquant
+/opt/pngquant/bin/pngquant
+
+ldd $(which pngquant)
+        statically linked
+
+/opt/pngquant/bin/pngquant --version
+3.0.3
+
+pngquant --version
+3.0.3
+
+pngquant 3 install complete
+binary installed at /opt/pngquant/bin/pngquant
+```
+
+# non-static built binary
+
 ```
 ./install-pngquant3.sh install
 Install pngqaunt 3
